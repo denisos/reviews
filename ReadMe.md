@@ -1,9 +1,8 @@
 # Reviews Node Apps
-## helloworld
 
 # Usage
 
-### Starting reviews locally
+### Starting reviews locally from /reviews
 
     node bin/server
 
