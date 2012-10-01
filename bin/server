@@ -1,25 +1,150 @@
 #!/usr/bin/env node
 
+/*
+ * The goal is to leanr mode about node js and mongodb.
+ * To that end I am creating a simple node app returns a list of
+ *  my book reviews from a mongo db database
+ *
+ * I also want to call to the Google Books api from the client to
+ *  add more book data where present.
+ * More here: https://developers.google.com/books/docs/v1/getting_started
+ *  ex: https://www.googleapis.com/books/v1/volumes?q=aftershock
+ *  by id https://www.googleapis.com/books/v1/volumes/y6Qu2brXO6oC
+ * But how to load by ISBN?
+*/
+
 var http = require('http'),
     path = require('path'),
     fs = require('fs');
+    mongodb = require('mongodb');
+
+var db = new mongodb.Db('nodejitsudb93315994410',
+    new mongodb.Server('alex.mongohq.com', 10042, {auto_reconnect: true})
+);
+
+db.open(function (err, db_p) {
+            if (err) { throw err; }
+});   
+
+// this function will seed data into the bookReview collection
+//
+var seedData = function (res) {
+	console.log('seedData');
+
+    db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
+            	// You are now connected and authenticated.
+
+            	console.log('Err after authn is ', err);	
+
+
+            	// insert 2 book reviews, then close and exit
+            	//
+            	// createCollection creates the collection
+            	//db.createCollection('bookReviews', function(err, colln) {
+            	
+            	db.collection('bookReviews', function(err, colln) {
+            		
+	            	colln.insert({ 
+	            		isbn: '9780312536633',
+	            		googleId: 'l4lxLsH2n3YC',
+	            		title: 'The Forever War',
+	            		myReview: 'I loved this book, read it over Labor Day holiday weekend when I really needed to rest and relax. I really like how easy it is to read and believe in. I easily believed what the author was writing'
+	            	}, function(){});
+
+	            	colln.insert({ 
+	            		isbn: '9780307592811',
+	            		googleId: 'y6Qu2brXO6oC',
+	            		title: 'Aftershock',
+	            		myReview: 'I feel like the Obama administration and their message of building up the middle class have been reading this authors work, and about time too! '
+	            	}, function(){});
+					
+            	});
+    });
+};
+
+// this function will empty the bookReview collection
+//
+var removeData = function (res) {
+	console.log('removeData');
+
+    db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {   
+        db.collection('bookReviews', function(err, colln) {
+	    	colln.remove({googleId: 'l4lxLsH2n3YC'}, {safe:true}, function(err, num) {
+           		console.log('Err after remove is ', err, num);	
+           	});	
+   		});
+	});
+};
+
+// this function will empty the bookReview collection
+//
+var listData = function (res) {
+	console.log('listData');
+
+    db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
+      	// You are now connected and authenticated.
+
+       	console.log('Err after authn is ', err);	
+
+       	// read book reviews
+       	db.collection('bookReviews', function(err, collection) {
+       		collection.find(function(err, cursor) {
+       			cursor.each(function(err, item) {
+       				console.log('book: ', item);
+
+					res.writeHead(200, {'Content-Type': 'text/html'});
+					res.end(fs.readFileSync(__dirname + '/index.html'));	
+       			});
+       		});        			
+       	});
+    });
+};
+
+
+// these are the web apps route metadata
+// object key matches a route e.g. /index, /seed
+//  object value is the fn to call e.g. listData
+//
+var reviewRoutes = {
+	index: listData,
+	seed: seedData,
+	remove: removeData	
+	   
+};
 
 // createServer creates a server listening on port 8080 and the 
 //  callback is called when requests are received.
 //
 http.createServer(function (req, res) {
 
+	if (req.url === '/favicon.ico') {
+		res.end();
+		return;
+	}	
+
 	// if basename is index or '' then provide index.html
 	// else return error
 	//
-	var lookup = path.basename(decodeURI(req.url));
-	if (lookup === 'index' || lookup === '') {
-		res.writeHead(200, {'Content-Type': 'text/html'});
-		res.end(fs.readFileSync(__dirname + '/index.html'));
-	} else {
+	var lookup = path.basename(decodeURI(req.url)),
+	    route;
+
+	if (lookup === '') {
+		lookup = 'index';  // blank same as index
+	}
+
+	console.log(lookup);
+
+	reviewRouteFn = reviewRoutes[lookup];
+
+	// if null for lookup then return error
+	if (! reviewRouteFn) {
 		res.writeHead(404, {'Content-Type': 'text/html'});            //
 		res.end('Sorry, Page Not Found!');    // write string passed and then end
 	}
+
+	// run the route
+	reviewRouteFn(res);
+
 }).listen(8080);
 
 
