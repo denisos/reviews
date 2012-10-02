@@ -1,6 +1,6 @@
 {
   "name": "reviews",
-  "version": "0.2.1-9",
+  "version": "0.2.1-11",
   "author": {
     "name": "denisos"
   },
@@ -19,7 +19,9 @@
     "start": "node ./bin/server"
   },
   "contributors": [],
-  "dependencies": {},
+  "dependencies": {
+    "mongodb": ">=0"
+  },
   "devDependencies": {},
   "engines": {
     "node": ">=0.4"

@@ -22,8 +22,12 @@ var db = new mongodb.Db('nodejitsudb93315994410',
     new mongodb.Server('alex.mongohq.com', 10042, {auto_reconnect: true})
 );
 
+// open the db connection at start, 
+// will be available for all subsequent requests
+// expect there's a cleaner way to do this but this is just a POC
+//
 db.open(function (err, db_p) {
-            if (err) { throw err; }
+    if (err) { throw err; }
 });   
 
 // this function will seed data into the bookReview collection
@@ -63,12 +67,15 @@ var seedData = function (res) {
 };
 
 // this function will empty the bookReview collection
+//  (needs some work)
 //
 var removeData = function (res) {
 	console.log('removeData');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {   
         db.collection('bookReviews', function(err, colln) {
+
+        	// this currently only deletes one, I'd like to remove all
 	    	colln.remove({googleId: 'l4lxLsH2n3YC'}, {safe:true}, function(err, num) {
            		console.log('Err after remove is ', err, num);	
            	});	
@@ -76,9 +83,12 @@ var removeData = function (res) {
 	});
 };
 
-// this function will empty the bookReview collection
+// this function will return the bookReview collection contents embedded in index page
+//  thereby bootstrapping the client with data
 //
 var listData = function (res) {
+	var buffer;
+
 	console.log('listData');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
@@ -88,14 +98,19 @@ var listData = function (res) {
 
        	// read book reviews
        	db.collection('bookReviews', function(err, collection) {
-       		collection.find(function(err, cursor) {
-       			cursor.each(function(err, item) {
-       				console.log('book: ', item);
+       		collection.find().toArray(function(err, items) {
+   				console.log('reviews: ', items);
 
-					res.writeHead(200, {'Content-Type': 'text/html'});
-					res.end(fs.readFileSync(__dirname + '/index.html'));	
-       			});
-       		});        			
+   				// ok, this is a little hokey but it works for now
+   				// read file contents, when pass encoding then response is a string
+				//  and replace placeholder string with json data from mongodb find()
+				fileContents = fs.readFileSync(__dirname + '/index.html', 'utf8');
+				fileContents = fileContents.replace('%Reviews_PH%', JSON.stringify(items));
+
+				// now write the file contents
+				res.writeHead(200, {'Content-Type': 'text/html'});
+				res.end(fileContents);	
+   			});      			
        	});
     });
 };
@@ -117,8 +132,10 @@ var reviewRoutes = {
 //
 http.createServer(function (req, res) {
 
+	// ignore favicon (sorry)
 	if (req.url === '/favicon.ico') {
 		res.end();
+
 		return;
 	}	
 
@@ -134,18 +151,51 @@ http.createServer(function (req, res) {
 
 	console.log(lookup);
 
+	// find the route for the url basename
 	reviewRouteFn = reviewRoutes[lookup];
 
-	// if null for lookup then return error
+	// if no route found then then return error page
 	if (! reviewRouteFn) {
 		res.writeHead(404, {'Content-Type': 'text/html'});            //
 		res.end('Sorry, Page Not Found!');    // write string passed and then end
+
+		return; // exit
 	}
 
-	// run the route
+	// ok, we have a route match so execute the route
+	//
 	reviewRouteFn(res);
 
 }).listen(8080);
 
 
 console.log('> http server has started on port 8080');
+
+
+
+/*
+
+var listData = function (res) {
+	var buffer;
+
+	console.log('listData');
+
+    db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
+      	// You are now connected and authenticated.
+
+       	console.log('Err after authn is ', err);	
+
+       	// read book reviews
+       	db.collection('bookReviews', function(err, collection) {
+       		collection.find(function(err, cursor) {
+       			cursor.each(function(err, item) {
+       				console.log('book: ', item);
+
+					//res.end(fs.readFileSync(__dirname + '/index.html'));	
+       			});
+       		});        			
+       	});
+    });
+};
+
+*/

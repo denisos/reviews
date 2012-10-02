@@ -16,7 +16,7 @@
 
 
 # Next
-- how to put mongodb results into index.html page
+- how to put mongodb results into index.html page - done!
 - add some backbone
 - pull in some data from google library api
 - I'm using home grown routing partly as a means to learn but a web framework like express would be better
@@ -39,3 +39,43 @@ Is not a full stack framework like RoR. But there are add ons such as Express wh
 
 # MongoDB
 Collections are akin to tables in Relational DB. Collections store json documents.
+
+# MongoDB
+## List the dbs
+jitsu databases list
+
+## MongoDB creation command I ran
+
+jitsu databases create mongo reviewsMongo
+info:    Welcome to Nodejitsu deniskos
+info:    jitsu v0.9.8
+info:    It worked if it ends with Nodejitsu ok
+info:    Executing command databases create mongo reviewsMongo
+info:    A new mongo has been created
+data:    Database Type: mongo
+data:    Database Name: reviewsMongo
+data:    Connection url: mongodb://nodejitsu:a3bf2896d17cbf1cd4068210f8fa9bb8@alex.mongohq.com:10042/nodejitsudb93315994410
+help:    
+help:    Connect with the `mongo` cli client:
+help:    
+             $ mongo alex.mongohq.com:10042/nodejitsudb93315994410 -u nodejitsu -p a3bf2896d17cbf1cd4068210f8fa9bb8
+help:    
+help:    Connect with the `mongodb-native module`:
+help:    
+             var mongodb = require('mongodb');
+             var db = new mongodb.Db('nodejitsudb93315994410',
+               new mongodb.Server('alex.mongohq.com', 10042, {})
+             );
+             db.open(function (err, db_p) {
+               if (err) { throw err; }
+               db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {
+                 // You are now connected and authenticated.
+               });
+             });
+help:    
+help:    Connect with the `mongoose` module:
+help:    
+             var mongoose = require('mongoose');
+             mongoose.connect('mongodb://nodejitsu:a3bf2896d17cbf1cd4068210f8fa9bb8@alex.mongohq.com:10042/nodejitsudb93315994410');
+help:    
+info:    Nodejitsu ok
