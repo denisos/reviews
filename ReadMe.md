@@ -1,5 +1,18 @@
 # Reviews Node Apps
 
+This is a web app to store, retrieve and update book reviews. I've been on a reading spurt lately, sci fi and more and wanted to record my thoughts on these books as well as try out new technologies.
+
+The stack:
+- Book reviews are stored in a mongodb collection
+- I use node js as web server to serve pages, handle requests and do mongodb crud
+- I use backbone.js on the frontend along with html, css and jquery
+- This web app is hosted on nodejitsu which also hosts mongodb. The app alos runs locally.
+- I also plan to call the Google library api to retrieve more data (e.g. image) for the books.
+Ultimately I want to use a web framework like express but for now any rolling my own as a learning exercise.
+
+In software, learning by doing is king, so this is a means for me to learn node, mongodb and node jitsu.
+
+
 # Usage
 
 ### Starting reviews locally from /reviews
@@ -12,7 +25,7 @@
 
     jitsu deploy
 
-*You will now be prompted for a `subdomain` to deploy your application on*
+You can see the app deployed on jitsu at: http://reviews.jit.su/
 
 
 # Next
@@ -27,11 +40,11 @@ https://github.com/nodejitsu/handbook
 
 
 # References and Book
-Node Cookbook, Clements, Safari books
-http://www.mongodb.org/display/DOCS/node.JS
-https://github.com/christkv/mongodb-presentation
-http://www.slideshare.net/ggoodale/getting-started-with-mongodb-and-nodejs
-http://mongodb.github.com/node-mongodb-native/api-articles/nodekoarticle1.html
+- Node Cookbook, Clements, Safari books
+- http://www.mongodb.org/display/DOCS/node.JS
+- https://github.com/christkv/mongodb-presentation
+- http://www.slideshare.net/ggoodale/getting-started-with-mongodb-and-nodejs
+- http://mongodb.github.com/node-mongodb-native/api-articles/nodekoarticle1.html
 
 
 # Node
@@ -47,6 +60,7 @@ jitsu databases list
 ## MongoDB creation command I ran
 
 jitsu databases create mongo reviewsMongo
+
 info:    Welcome to Nodejitsu deniskos
 info:    jitsu v0.9.8
 info:    It worked if it ends with Nodejitsu ok
