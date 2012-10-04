@@ -33,6 +33,7 @@ You can see the app deployed on jitsu at: http://reviews.jit.su/
 - add some backbone
 - pull in some data from google library api
 - I'm using home grown routing partly as a means to learn but a web framework like express would be better
+- investigate relational support in mongodb e.g. author information to book relationship
 
 
 # Nodejitsu handbook

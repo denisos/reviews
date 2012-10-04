@@ -87,7 +87,7 @@ var removeData = function (res) {
 //  thereby bootstrapping the client with data
 //
 var listData = function (res) {
-	var buffer;
+	var fileContents;
 
 	console.log('listData');
 
@@ -104,7 +104,7 @@ var listData = function (res) {
    				// ok, this is a little hokey but it works for now
    				// read file contents, when pass encoding then response is a string
 				//  and replace placeholder string with json data from mongodb find()
-				fileContents = fs.readFileSync(__dirname + '/index.html', 'utf8');
+				fileContents = fs.readFileSync(__dirname + '/content/index.html', 'utf8');
 				fileContents = fileContents.replace('%Reviews_PH%', JSON.stringify(items));
 
 				// now write the file contents
@@ -115,44 +115,81 @@ var listData = function (res) {
     });
 };
 
+var returnJS = function (res, req) {
+	// now write the file contents
+	res.writeHead(200, {'Content-Type': 'text/javascript'});
+	res.end(fs.readFileSync(__dirname + req.url));	
+};
+var returnCss = function (res, basename) {
+	// now write the file contents
+	res.writeHead(200, {'Content-Type': 'text/css'});
+	res.end(fs.readFileSync(__dirname + req.url));	
+};
+
+
 
 // these are the web apps route metadata
 // object key matches a route e.g. /index, /seed
 //  object value is the fn to call e.g. listData
 //
 var reviewRoutes = {
+	'': listData,
 	index: listData,
 	seed: seedData,
-	remove: removeData	
+	remove: removeData,
+	javascript: returnJS,
+	stylesheet: returnCss	
 	   
 };
+
+var mimeTypes = {
+	'.js' : 'text/javascript',
+	'.html': 'text/html',
+	'.css' : 'text/css'
+};
+
+function lookupRoute(basename) {
+	if (basename && basename.indexOf('.js') !== -1) {
+		basename = 'javascript';
+	}
+	if (basename && basename.indexOf('.css') !== -1) {
+		basename = 'stylesheet';
+	}	
+
+	// find the route for the url basename
+	reviewRouteFn = reviewRoutes[basename];
+
+	// if found then return
+	if (reviewRouteFn) {
+		return reviewRouteFn; 
+	}	
+
+
+}
 
 // createServer creates a server listening on port 8080 and the 
 //  callback is called when requests are received.
 //
 http.createServer(function (req, res) {
+	var basename ;
 
 	// ignore favicon (sorry)
 	if (req.url === '/favicon.ico') {
 		res.end();
-
 		return;
 	}	
+
+	console.log(req.url);
 
 	// if basename is index or '' then provide index.html
 	// else return error
 	//
-	var lookup = path.basename(decodeURI(req.url)),
-	    route;
+	basename = path.basename(decodeURI(req.url));
 
-	if (lookup === '') {
-		lookup = 'index';  // blank same as index
-	}
-
-	console.log(lookup);
+	console.log("Lookup is: ", basename);
 
 	// find the route for the url basename
-	reviewRouteFn = reviewRoutes[lookup];
+	reviewRouteFn = lookupRoute(basename);
 
 	// if no route found then then return error page
 	if (! reviewRouteFn) {
@@ -164,7 +201,7 @@ http.createServer(function (req, res) {
 
 	// ok, we have a route match so execute the route
 	//
-	reviewRouteFn(res);
+	reviewRouteFn(res, req);
 
 }).listen(8080);
 
