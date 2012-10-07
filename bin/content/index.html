@@ -12,7 +12,7 @@
        More info: h5bp.com/i/378 -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <title>Denis app</title>
+  <title>book reviews</title>
   <meta name="description" content="">
 
   <!-- Mobile viewport optimized: h5bp.com/viewport -->
@@ -36,7 +36,7 @@
   <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 
   <script>
-    window.bookReviewsData = %Reviews_PH% ;
+
   </script>
 
   <div id="header">
@@ -56,9 +56,30 @@
   <script>window.JSON || document.write('<script src="js/libs/json2.js"><\/script>')</script>
   
   <!-- contains all libraries and code for the  app -->
-  <script src="/content/js/lib/underscore.js"></script>
-  <script src="/content/js/lib/backbone.js"></script>
   <script src="/content/js/all.combined.js"></script>
+
+  <script type="text/plain" id="init_data" class="json-data">%Reviews_PH%</script>
+  <script>
+    (function() {
+          var jsonText = document.getElementById('init_data').innerHTML, 
+              initData = JSON.parse(jsonText),
+              app = window.reviews;
+          console.log(initData);
+
+          // use the json data to bootstrap the book reviews collection
+          //  avoiding a server call
+          // create the list view passing the collection
+          // then reset the collection with the json data (and trigger view)
+          //
+          app.collections.bookReviewColln = new app.collections.BookReviewCollection();
+
+          app.views.bookReviewsView = new app.views.BookReviewsView({reviews: app.collections.bookReviewColln});
+
+          app.collections.bookReviewColln.reset(initData);
+    }());
+
+
+  </script>
     
 </body>
 </html>

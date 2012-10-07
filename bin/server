@@ -32,7 +32,7 @@ db.open(function (err, db_p) {
 
 // this function will seed data into the bookReview collection
 //
-var seedData = function (res) {
+var seed = function (res) {
 	console.log('seedData');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
@@ -69,7 +69,7 @@ var seedData = function (res) {
 // this function will empty the bookReview collection
 //  (needs some work)
 //
-var removeData = function (res) {
+var removeAll = function (res) {
 	console.log('removeData');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {   
@@ -86,18 +86,22 @@ var removeData = function (res) {
 // this function will return the bookReview collection contents embedded in index page
 //  thereby bootstrapping the client with data
 //
-var listData = function (res) {
+var home = function (res) {
 	var fileContents;
 
-	console.log('listData');
+	console.log('home page requested');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
       	// You are now connected and authenticated.
 
-       	console.log('Err after authn is ', err);	
+       	console.log('Authn status ', err);	
 
        	// read book reviews
        	db.collection('bookReviews', function(err, collection) {
+
+       		// toArray() is a shortcut which will not work for large sets of data
+       		// would have to use stream or pagination or other for larger
+       		//
        		collection.find().toArray(function(err, items) {
    				console.log('reviews: ', items);
 
@@ -115,31 +119,23 @@ var listData = function (res) {
     });
 };
 
-var returnJS = function (res, req) {
+// handler to just straight return requested asset e.g. js, css etc.
+var asset = function (res, req) {
 	// now write the file contents
-	res.writeHead(200, {'Content-Type': 'text/javascript'});
+	res.writeHead(200, {'Content-Type': mimeTypes[path.extname(decodeURI(req.url))]});
 	res.end(fs.readFileSync(__dirname + req.url));	
 };
-var returnCss = function (res, basename) {
-	// now write the file contents
-	res.writeHead(200, {'Content-Type': 'text/css'});
-	res.end(fs.readFileSync(__dirname + req.url));	
-};
-
 
 
 // these are the web apps route metadata
-// object key matches a route e.g. /index, /seed
+// object key matches a route e.g. /, /seed
 //  object value is the fn to call e.g. listData
 //
 var reviewRoutes = {
-	'': listData,
-	index: listData,
-	seed: seedData,
-	remove: removeData,
-	javascript: returnJS,
-	stylesheet: returnCss	
-	   
+	'/': home,
+	'/seed': seed,
+	'/remove': removeAll,
+	'asset': asset	   
 };
 
 var mimeTypes = {
@@ -148,30 +144,22 @@ var mimeTypes = {
 	'.css' : 'text/css'
 };
 
-function lookupRoute(basename) {
-	if (basename && basename.indexOf('.js') !== -1) {
-		basename = 'javascript';
+function lookupRoute(url) {
+	// treat js, css and images as assets
+	if (url && (url.indexOf('.js') !== -1 || url.indexOf('.css') !== -1)) {
+		url = 'asset';
 	}
-	if (basename && basename.indexOf('.css') !== -1) {
-		basename = 'stylesheet';
-	}	
 
-	// find the route for the url basename
-	reviewRouteFn = reviewRoutes[basename];
-
-	// if found then return
-	if (reviewRouteFn) {
-		return reviewRouteFn; 
-	}	
-
-
+	// find the route for the url url
+	return reviewRoutes[url];
 }
 
 // createServer creates a server listening on port 8080 and the 
 //  callback is called when requests are received.
 //
 http.createServer(function (req, res) {
-	var basename ;
+	var url,
+	    routeFn ;
 
 	// ignore favicon (sorry)
 	if (req.url === '/favicon.ico') {
@@ -179,29 +167,21 @@ http.createServer(function (req, res) {
 		return;
 	}	
 
-	console.log(req.url);
+	//console.log("url requested: ", req.url);
 
-	// if basename is index or '' then provide index.html
-	// else return error
-	//
-	basename = path.basename(decodeURI(req.url));
-
-	console.log("Lookup is: ", basename);
-
-	// find the route for the url basename
-	reviewRouteFn = lookupRoute(basename);
-
+	// find route for url
 	// if no route found then then return error page
-	if (! reviewRouteFn) {
+	//
+	routeFn = lookupRoute(decodeURI(req.url));
+	if (! routeFn) {
 		res.writeHead(404, {'Content-Type': 'text/html'});            //
 		res.end('Sorry, Page Not Found!');    // write string passed and then end
-
 		return; // exit
 	}
 
 	// ok, we have a route match so execute the route
 	//
-	reviewRouteFn(res, req);
+	routeFn(res, req);
 
 }).listen(8080);
 
@@ -210,7 +190,7 @@ console.log('> http server has started on port 8080');
 
 
 
-/*
+/*  mongodb cursor example
 
 var listData = function (res) {
 	var buffer;
