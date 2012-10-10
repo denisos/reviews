@@ -4,7 +4,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     lint: {
-      files: ['grunt.js', 'app/*.js', 'app/javascript/backbone/**/*.js']
+      files: ['grunt.js', 'bin/server', 'app/*.js', 'app/javascript/backbone/**/*.js']
     },
     snockets: {
       dev: {
@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       }
     },
    watch: {
-      files: ['app/templates/**/*.html', 'app/javascript/*.js', 'app/javascript/**/*.js'],
+      files: ['bin/server', 'app/templates/**/*.html', 'app/javascript/*.js', 'app/javascript/**/*.js'],
       tasks: 'dust lint snockets'
     },
     jshint: {
@@ -51,7 +51,10 @@ module.exports = function(grunt) {
         '_': true,
         dust: true,
         Modernizr: true,
-        google: true
+        google: true,
+        require: true,
+        mongodb: true,
+        __dirname: true
       }
     }
   });

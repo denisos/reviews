@@ -1,15 +1,17 @@
 
 <form id="addReviewForm" method="/reviews" action="post">
     <div>
-        <h2>Book Review:</h2>
+        <h2>Enter a book review here:</h2>
 
         <label>
-        <span>isbn</span><input id="isbn" type="text" name="isbn" placeholder="10 or 13 ok" autofocus/>
+        <span>title</span><input id="title" type="text" name="title" autofocus/>
+        <input type="button" id="search" value="search" />
         </label>
 
         <label>
-        <span>title</span><input id="title" type="text" name="title" />
+        <span>isbn</span><input id="isbn" type="text" name="isbn" placeholder="10 or 13 ok" />
         </label>
+
 
         <label>
         <span>review</span><textarea id="review" name="review"></textarea>

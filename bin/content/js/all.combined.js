@@ -3088,7 +3088,7 @@ dust.helpers = helpers;
 //= require backbone
 //= require dust-core-0.4.0
 
-(function(){dust.register("addreview_addreview",body_0);function body_0(chk,ctx){return chk.write("<form id=\"addReviewForm\" method=\"/reviews\" action=\"post\"><div><h2>Book Review:</h2><label><span>isbn</span><input id=\"isbn\" type=\"text\" name=\"isbn\" placeholder=\"10 or 13 ok\" autofocus/></label><label><span>title</span><input id=\"title\" type=\"text\" name=\"title\" /></label><label><span>review</span><textarea id=\"review\" name=\"review\"></textarea><input type=\"submit\" id=\"save\" value=\"save\" /></label></div></form>");}return body_0;})();(function(){dust.register("home_index",body_0);function body_0(chk,ctx){return chk.section(ctx.get("reviews"),ctx,{"else":body_1,"block":body_2},null).write("<a class=\"addReview clear\" href=\"#add\">Add new Review</a>");}function body_1(chk,ctx){return chk.write("<h1>Sorry, no reviews to be found!</h1>");}function body_2(chk,ctx){return chk.write("<div class=\"reviewContainer\"><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\"><img src=").reference(ctx.get("thumbImg"),ctx,"h").write(" class=\"bookThumbImg\"></a><div><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\">").reference(ctx.get("title"),ctx,"h").write("</a></div></div>");}return body_0;})();
+(function(){dust.register("addreview_addreview",body_0);function body_0(chk,ctx){return chk.write("<form id=\"addReviewForm\" method=\"/reviews\" action=\"post\"><div><h2>Enter a book review here:</h2><label><span>title</span><input id=\"title\" type=\"text\" name=\"title\" autofocus/><input type=\"button\" id=\"search\" value=\"search\" /></label><label><span>isbn</span><input id=\"isbn\" type=\"text\" name=\"isbn\" placeholder=\"10 or 13 ok\" /></label><label><span>review</span><textarea id=\"review\" name=\"review\"></textarea><input type=\"submit\" id=\"save\" value=\"save\" /></label></div></form>");}return body_0;})();(function(){dust.register("home_index",body_0);function body_0(chk,ctx){return chk.write("<h2>The following are book reviews for books I've read recently</h2>").section(ctx.get("reviews"),ctx,{"else":body_1,"block":body_2},null).write("<a class=\"addReview clear\" href=\"#add\">Add new Review</a>");}function body_1(chk,ctx){return chk.write("<h1>Sorry, no reviews to be found!</h1>");}function body_2(chk,ctx){return chk.write("<div class=\"reviewContainer\"><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\"><img src=").reference(ctx.get("thumbImg"),ctx,"h").write(" class=\"bookThumbImg\"></a><div><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\">").reference(ctx.get("title"),ctx,"h").write("</a></div></div>");}return body_0;})();
 // Setting up default namespaces if they do not exist
 // --------------------
 // Adding console.log utilities if missing 
@@ -3123,6 +3123,9 @@ if (window.reviews === undefined) {
     // BookModel represents a book
     //
     reviews.models.BookModel = Backbone.Model.extend({
+        parse: function(response) {
+            console.log(response);
+        }
     });
 
 }(window.reviews, Backbone, jQuery, _));
@@ -3149,10 +3152,13 @@ if (window.reviews === undefined) {
         m = reviews.models;
 
     c.BookCollection = Backbone.Collection.extend({
-		model: m.BookRModel,
+        url: function() {
+            return 'https://www.googleapis.com/books/v1/volumes?q=' + this.searchTerm;
+        },
 
-        initialize: function() {
-        }
+		model: m.BookModel
+
+
     });
 
 }(window.reviews, Backbone, jQuery, _));
@@ -3257,7 +3263,8 @@ if (window.reviews === undefined) {
     el: '#content',
 
     events: {
-       'click #save'    : 'handleSaveBookReview'
+       'click #save'    : 'handleSaveBookReview',
+       'keypress #title'   : 'handleTitleKeypress'
     },
 
     /*
@@ -3316,6 +3323,10 @@ if (window.reviews === undefined) {
                             } 
                         }
         );
+    },
+
+    handleTitleKeypress: function(event) {
+        console.log('keypress char: ', String.fromCharCode(event.which));
     }
 
   },

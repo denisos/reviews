@@ -9,10 +9,13 @@
         m = reviews.models;
 
     c.BookCollection = Backbone.Collection.extend({
-		model: m.BookRModel,
+        url: function() {
+            return 'https://www.googleapis.com/books/v1/volumes?q=' + this.searchTerm;
+        },
 
-        initialize: function() {
-        }
+		model: m.BookModel
+
+
     });
 
 }(window.reviews, Backbone, jQuery, _));

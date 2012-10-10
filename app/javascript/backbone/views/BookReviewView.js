@@ -17,7 +17,8 @@
     el: '#content',
 
     events: {
-       'click #save'    : 'handleSaveBookReview'
+       'click #save'    : 'handleSaveBookReview',
+       'keypress #title'   : 'handleTitleKeypress'
     },
 
     /*
@@ -76,6 +77,10 @@
                             } 
                         }
         );
+    },
+
+    handleTitleKeypress: function(event) {
+        console.log('keypress char: ', String.fromCharCode(event.which));
     }
 
   },
