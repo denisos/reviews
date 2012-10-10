@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 
 /*
- * The goal is to leanr mode about node js and mongodb.
+ * The goal is to leaRn mode about node js, mongodb and nodejitsu.
  * To that end I am creating a simple node app returns a list of
  *  my book reviews from a mongo db database
+ * I added the ability to save reviews
+ *
+ * This code is very R&D. It is linted but not well designed nor DRY.
  *
  * I also want to call to the Google Books api from the client to
  *  add more book data where present.
  * More here: https://developers.google.com/books/docs/v1/getting_started
  *  ex: https://www.googleapis.com/books/v1/volumes?q=aftershock
  *  by id https://www.googleapis.com/books/v1/volumes/y6Qu2brXO6oC
- * But how to load by ISBN?
+ * 
 */
 
 var http = require('http'),
@@ -32,53 +35,68 @@ db.open(function (err, db_p) {
 
 // this function will seed data into the bookReview collection
 //
-var seed = function (res) {
+var seedAll = function (req, res) {
 	console.log('seedData');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {      	
-            	// You are now connected and authenticated.
+        // You are now connected and authenticated.
 
-            	console.log('Err after authn is ', err);	
+        console.log('Err after authn is ', err);	
 
 
-            	// insert 2 book reviews, then close and exit
-            	//
-            	// createCollection creates the collection
-            	//db.createCollection('bookReviews', function(err, colln) {
+        // insert 2 book reviews, then close and exit
+        //
+        // createCollection creates the collection
+        //db.createCollection('bookReviews', function(err, colln) {
             	
-            	db.collection('bookReviews', function(err, colln) {
+        db.collection('bookReviews', function(err, colln) {
             		
 	            	colln.insert({ 
 	            		isbn: '9780312536633',
-	            		googleId: 'l4lxLsH2n3YC',
+	            	//	googleId: 'l4lxLsH2n3YC',
 	            		title: 'The Forever War',
+                        thumbImg: 'http://bks2.books.google.com/books?id=l4lxLsH2n3YC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api',
 	            		myReview: 'I loved this book, read it over Labor Day holiday weekend when I really needed to rest and relax. I really like how easy it is to read and believe in. I easily believed what the author was writing'
 	            	}, function(){});
 
 	            	colln.insert({ 
 	            		isbn: '9780307592811',
-	            		googleId: 'y6Qu2brXO6oC',
+	            	//	googleId: 'y6Qu2brXO6oC',
 	            		title: 'Aftershock',
+                        thumbImg: 'http://bks2.books.google.com/books?id=y6Qu2brXO6oC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api',
 	            		myReview: 'I feel like the Obama administration and their message of building up the middle class have been reading this authors work, and about time too! '
 	            	}, function(){});
+
+                                // return 200 ok
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.end();   
 					
-            	});
+        });
     });
 };
 
 // this function will empty the bookReview collection
 //  (needs some work)
 //
-var removeAll = function (res) {
+var removeAll = function (req, res) {
 	console.log('removeData');
 
     db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {   
         db.collection('bookReviews', function(err, colln) {
 
-        	// this currently only deletes one, I'd like to remove all
-	    	colln.remove({googleId: 'l4lxLsH2n3YC'}, {safe:true}, function(err, num) {
-           		console.log('Err after remove is ', err, num);	
-           	});	
+            //  removes all
+            colln.remove({}, {safe:true}, function(err, num) {
+                console.log('Err after remove is ', err, num);  
+            }); 
+
+        	// deletes one,
+	    	//colln.remove({googleId: 'l4lxLsH2n3YC'}, {safe:true}, function(err, num) {
+            //		console.log('Err after remove is ', err, num);	
+           	//});	
+
+            // return 200 ok
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.end();           
    		});
 	});
 };
@@ -86,7 +104,7 @@ var removeAll = function (res) {
 // this function will return the bookReview collection contents embedded in index page
 //  thereby bootstrapping the client with data
 //
-var home = function (res) {
+var home = function (req, res) {
 	var fileContents;
 
 	console.log('home page requested');
@@ -119,8 +137,49 @@ var home = function (res) {
     });
 };
 
+// this function will add a new review to the storage
+//
+var addReview = function(req, res) {
+    var postData = '';
+
+    console.log('addReview');
+
+    req.on('data', function(chunk) {
+        postData += chunk;
+    }).on('end', function() {
+        console.log('Data posted: ', postData);
+
+        postData = JSON.parse(postData);
+
+        // check postData is valid
+        // add default thumb image if non present
+        if (postData && postData.isbn && postData.review) {
+
+            console.log("postData is: ", postData);
+
+            db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {          
+                // You are now connected and authenticated.
+
+                // insert the book reviews, then close and exit
+                // 
+                db.collection('bookReviews', function(err, colln) {
+                            
+                    colln.insert(postData, function(){});
+                         
+                });
+            });
+
+        }
+ 
+
+        // return 200 ok
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.end();        
+    });
+};
+
 // handler to just straight return requested asset e.g. js, css etc.
-var asset = function (res, req) {
+var asset = function (req, res) {
 	// now write the file contents
 	res.writeHead(200, {'Content-Type': mimeTypes[path.extname(decodeURI(req.url))]});
 	res.end(fs.readFileSync(__dirname + req.url));	
@@ -133,9 +192,10 @@ var asset = function (res, req) {
 //
 var reviewRoutes = {
 	'/': home,
-	'/seed': seed,
+	'/seed': seedAll,
 	'/remove': removeAll,
-	'asset': asset	   
+	'asset': asset,
+    '/reviews': addReview
 };
 
 var mimeTypes = {
@@ -144,11 +204,18 @@ var mimeTypes = {
 	'.css' : 'text/css'
 };
 
-function lookupRoute(url) {
+function lookupRoute(req) {
+    var url = decodeURI(req.url);
+
 	// treat js, css and images as assets
 	if (url && (url.indexOf('.js') !== -1 || url.indexOf('.css') !== -1)) {
 		url = 'asset';
 	}
+
+    // really kludgy but if posting a new review then handle it
+    if (req.method === 'POST' && url.indexOf('reviews') !== -1) {
+        url = '/reviews'
+    }
 
 	// find the route for the url url
 	return reviewRoutes[url];
@@ -159,7 +226,7 @@ function lookupRoute(url) {
 //
 http.createServer(function (req, res) {
 	var url,
-	    routeFn ;
+	    routeFn;
 
 	// ignore favicon (sorry)
 	if (req.url === '/favicon.ico') {
@@ -167,12 +234,12 @@ http.createServer(function (req, res) {
 		return;
 	}	
 
-	//console.log("url requested: ", req.url);
+	console.log("url requested: ", req.url);
 
-	// find route for url
+	// find route for request
 	// if no route found then then return error page
 	//
-	routeFn = lookupRoute(decodeURI(req.url));
+	routeFn = lookupRoute(req);
 	if (! routeFn) {
 		res.writeHead(404, {'Content-Type': 'text/html'});            //
 		res.end('Sorry, Page Not Found!');    // write string passed and then end
@@ -181,7 +248,7 @@ http.createServer(function (req, res) {
 
 	// ok, we have a route match so execute the route
 	//
-	routeFn(res, req);
+	routeFn(req, res);
 
 }).listen(8080);
 

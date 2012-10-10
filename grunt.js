@@ -40,7 +40,8 @@ module.exports = function(grunt) {
         indent: 2,
         onevar: true,
         smarttabs: false,
-        white: false
+        white: false,
+        maxstatements: 10
         //white: true //jslint whitespace rules
       },
       globals: {    // define allowed globals, otherwise these will generate warnings which clutter

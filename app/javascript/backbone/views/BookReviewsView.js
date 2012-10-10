@@ -4,29 +4,36 @@
 (function (reviews, Backbone, $, _, dust) {
 
   /*
-   * BookReviewsView - displays all the book reviews
+   * Displays all the book reviews
    *
+   * @class BookReviewsView 
    */
   reviews.views.BookReviewsView = Backbone.View.extend({
 
     el: '#content',
 
     events: {
-       'click .bookReviewDetails'    : 'handleReviewEdit',
-       'click #addBookReview'        : 'handleAddReview'
+       'click .bookReviewDetails'    : 'handleReviewEdit'
 
     },
 
+    /*
+     * called once at creation
+     *
+     * @method initialize
+     */ 
     initialize: function () {
         _.bindAll(this, 'render');
 
+        // bind to the reviews collection passed
         this.options.reviews.bind('reset', this.render, this);
     },
 
     /*
-     * render the page with data
+     * show all the reviews
      *
-    */    
+     * @method render
+     */    
     render: function () {
         var self = this,
             data = {reviews: this.options.reviews.toJSON()};
@@ -46,12 +53,8 @@
     handleReviewEdit: function(event) {
         console.log("handleReviewEdit");
 
-	},
-
-    handleAddReview: function(event) {
-        console.log("handleAddReview");
-
 	}
+
 
   });
 

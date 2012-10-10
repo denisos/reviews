@@ -1,10 +1,18 @@
 
-<div id="reviewsList">
 
-    {#reviews}
-        <p>{isbn} </p>
-        <p>{title} </p>
 
-    {/reviews}
+{#reviews}
+    <div class="reviewContainer">
+        <a class="" href="#reviews/{isbn}">
+            <img src={thumbImg} class="bookThumbImg">
+        </a>
+
+        <div>
+            <a class="" href="#reviews/{isbn}">{title}</a>
+        </div>
+    </div>
+{:else}
+    <h1>Sorry, no reviews to be found!</h1>
+{/reviews}
      
-</div>
+<a class="addReview clear" href="#add">Add new Review</a>

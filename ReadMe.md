@@ -44,6 +44,7 @@ https://github.com/nodejitsu/handbook
 # References and Book
 - Node Cookbook, Clements, Safari books
 - http://www.mongodb.org/display/DOCS/node.JS
+- http://mongodb.github.com/node-mongodb-native/api-articles/nodekoarticle1.html
 - https://github.com/christkv/mongodb-presentation
 - http://www.slideshare.net/ggoodale/getting-started-with-mongodb-and-nodejs
 - http://mongodb.github.com/node-mongodb-native/api-articles/nodekoarticle1.html

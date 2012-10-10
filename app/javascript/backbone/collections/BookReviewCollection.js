@@ -9,6 +9,8 @@
         m = reviews.models;
 
     c.BookReviewCollection = Backbone.Collection.extend({
+        url: '/reviews',
+
         model: m.BookReviewModel,
 
         initialize: function() {

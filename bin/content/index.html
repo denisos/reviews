@@ -18,6 +18,9 @@
   <!-- Mobile viewport optimized: h5bp.com/viewport -->
   <meta name="viewport" content="width=device-width">
 
+
+  <link rel="stylesheet" type="text/css" media="screen" href="/content/css/all.css">
+
   <!-- Place favicon.ico and apple-touch-icon.png in the root directory: mathiasbynens.be/notes/touch-icons -->
 
 
@@ -39,9 +42,12 @@
 
   </script>
 
+
   <div id="header">
-    <h1>Loading hello from index.html, a file, via node on nodejitsu.</h1>
+    <h1>The following are book reviews for books I've read recently</h1>
   </div>
+
+
 
   <div id="content">
   </div>
@@ -54,32 +60,14 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
   <script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.1.min.js"><\/script>')</script>
   <script>window.JSON || document.write('<script src="js/libs/json2.js"><\/script>')</script>
-  
+
+  <!-- bootstrap data here -->  
+  <script type="text/plain" id="init_data" class="json-data">%Reviews_PH%</script>
+
   <!-- contains all libraries and code for the  app -->
   <script src="/content/js/all.combined.js"></script>
 
-  <script type="text/plain" id="init_data" class="json-data">%Reviews_PH%</script>
-  <script>
-    (function() {
-          var jsonText = document.getElementById('init_data').innerHTML, 
-              initData = JSON.parse(jsonText),
-              app = window.reviews;
-          console.log(initData);
 
-          // use the json data to bootstrap the book reviews collection
-          //  avoiding a server call
-          // create the list view passing the collection
-          // then reset the collection with the json data (and trigger view)
-          //
-          app.collections.bookReviewColln = new app.collections.BookReviewCollection();
-
-          app.views.bookReviewsView = new app.views.BookReviewsView({reviews: app.collections.bookReviewColln});
-
-          app.collections.bookReviewColln.reset(initData);
-    }());
-
-
-  </script>
     
 </body>
 </html>
