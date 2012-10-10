@@ -1,5 +1,4 @@
 
-bin/content/js/all.*.js
+
 app/templates/templates.combined.js
-bin/content/css/all.css
-bin/content/js/all.combined.js
+
