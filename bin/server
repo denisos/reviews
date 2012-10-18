@@ -6,7 +6,8 @@
  *  my book reviews from a mongo db database
  * I added the ability to save reviews
  *
- * This code is very R&D. It is linted but not well designed nor DRY.
+ * This code is very R&D. It is linted but not very well designed, has little error
+ *  handling and may nort be DRY.
  *
  * I also want to call to the Google Books api from the client to
  *  add more book data where present.
@@ -19,165 +20,21 @@
 var http = require('http'),
     path = require('path'),
     fs = require('fs');
-    mongodb = require('mongodb');
+    mongodb = require('mongodb'),
+    StorageCrud = require('./storeCrud');
 
+if (!StorageCrud) throw new Error("reviews storage not exist");
 
-/*
- * reviewsStore is a javascript object which provides methods to do crud operations
- *  for book reviews. In that way persistence details are encapsulated.
- * a book review is a javascript object (reviewDoc)
- *
- * reviewstore api methods include:
- *   list - returns array of all reviews as javascript objects (reviewDoc)
- *   seed - populates reviewDocs into storage
- *   remove - removes all reviewDocs from storage
- *   add - adds a review javascript object into storage
- *
- *  You typically call it as follows:  
- *    reviewsStore.method(successCallback, errorCallback);
- *   e.g.
- *    reviewsStore.seed(successCallback, errorCallback);
- *
- */
-var reviewsStore = (function() {
-
-    var db = new mongodb.Db('nodejitsudb93315994410',
-        new mongodb.Server('alex.mongohq.com', 10042, {auto_reconnect: true})
-    ),
-
-    // this function will seed data into the bookReview collection
-    //
-    seed = function (success, error) {
-        console.log('seedData');
-
-        db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) { 
-            // You are now connected and authenticated.
-
-            console.log('Err after authn is ', err);	
-
-
-            // insert 2 book reviews, then close and exit
-            //
-            // createCollection creates the collection
-            //db.createCollection('bookReviews', function(err, colln) { 
-            db.collection('bookReviews', function(err, colln) {
-
-                colln.insert({ 
-                    isbn: '9780312536633',
-                    title: 'The Forever War',
-                    thumbImg: 'http://bks2.books.google.com/books?id=l4lxLsH2n3YC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api',
-                    myReview: 'I loved this book, read it over Labor Day holiday weekend when I really needed to rest and relax. I really like how easy it is to read and believe in. I easily believed what the author was writing'
-                }, function(){});
-
-                colln.insert({ 
-                    isbn: '9780307592811',
-                    title: 'Aftershock',
-                    thumbImg: 'http://bks2.books.google.com/books?id=y6Qu2brXO6oC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api',
-                    myReview: 'I feel like the Obama administration and their message of building up the middle class have been reading this authors work, and about time too! '
-                }, function(){});
-
-                // invoke the success callback
-                success();  
-			
-            });
-        });
-    },
-
-    // this function will empty the bookReview collection
-    //
-    remove = function (success, error) {
-        console.log('removeData');
-
-        db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {   
-            db.collection('bookReviews', function(err, colln) {
-
-                //  removes all
-                colln.remove({}, {safe:true}, function(err, num) {
-                    console.log('Err after remove is ', err, num);  
-                }); 
-
-                // deletes one,
-                //colln.remove({googleId: 'l4lxLsH2n3YC'}, {safe:true}, function(err, num) {
-                //		console.log('Err after remove is ', err, num);	
-                //});	
-
-                // invoke the success callback
-                success();           
-            });
-        });
-    },
-    
-    // this function will return the bookReview collection contents embedded in index page
-    //  thereby bootstrapping the client with data
-    //
-    list = function (success, error) {
-        var fileContents;
-
-        console.log('home page requested');
-
-        db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) { 
-            // You are now connected and authenticated.
-
-            console.log('Authn status ', err);	
-
-            // read book reviews
-            db.collection('bookReviews', function(err, collection) {
-
-                // toArray() is a shortcut which will not work for large sets of data
-                //   would have to use stream or pagination or other for larger, real world
-                //
-                collection.find().toArray(function(err, items) {
-                    console.log('reviews: ', items);
-
-                    // call the success callback with items
-                    success(items);	
-                }); 
-            });
-        });
-    },
-
-    /*
-     * this function will add a new review to the storage
-     *
-     * @param {object} reviewDoc to persist
-     * @param {Function} succcess callback
-     */   
-    add = function(reviewDoc, success, error) {
-        var postData = '';
-
-        console.log('addReview');
-
-        db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) {          
-            // You are now connected and authenticated.
-
-            // insert the book review
-            // 
-            db.collection('bookReviews', function(err, colln) {
-                                
-                colln.insert(reviewDoc, function(){});
-
-                success();
-                             
-            });
-        });
-    };
-    
-    // open the db connection at start, 
-    // will be available for all subsequent requests
-    // expect there's a cleaner way to do this but this is just a POC
-    //
-    db.open(function (err, db_p) {
-        if (err) { throw err; }
-    }); 
-
-    return {
-        add: add,
-        remove: remove,
-        list: list,
-        seed: seed
-    };
-}());
-
+// instantiate the storage manager
+//
+var reviewsStore = new StorageCrud({databaseName: 'nodejitsudb93315994410',
+                                    server: 'alex.mongohq.com',
+                                    port: 10042,
+                                    collection: 'bookReviews',
+                                    authInfo: {
+                                        user: 'nodejitsu',
+                                        password: 'a3bf2896d17cbf1cd4068210f8fa9bb8'
+                                    } });
 var mimeTypes = {
     '.js' : 'text/javascript',
     '.html': 'text/html',
@@ -343,31 +200,3 @@ http.createServer(function (req, res) {
 
 
 console.log('> http server has started on port 8080');
-
-
-
-/*  mongodb cursor example
-
-var listData = function (res) {
-	var buffer;
-
-	console.log('listData');
-
-    db.authenticate('nodejitsu', 'a3bf2896d17cbf1cd4068210f8fa9bb8', function (err, replies) { 
-        // You are now connected and authenticated.
-
-        console.log('Err after authn is ', err);	
-
-        // read book reviews
-        db.collection('bookReviews', function(err, collection) {
-            collection.find(function(err, cursor) {
-                cursor.each(function(err, item) {
-                    console.log('book: ', item);
-
-                    //res.end(fs.readFileSync(__dirname + '/index.html'));	
-                });
-            }); 
-        });
-    });
-};
-*/

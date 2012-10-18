@@ -6,7 +6,7 @@ The stack:
 - Book reviews are stored in a mongodb collection
 - I use node js as web server to serve pages, handle requests and do mongodb crud
 - I use backbone.js on the frontend along with html, css and jquery
-- This web app is hosted on nodejitsu which also hosts mongodb. The app alos runs locally.
+- This web app is hosted on nodejitsu which also hosts mongodb. The app also works locally.
 - I also plan to call the Google library api to retrieve more data (e.g. image) for the books.
 Ultimately I want to use a web framework like express but for now any rolling my own as a learning exercise.
 
@@ -30,7 +30,8 @@ You can see the app deployed on jitsu at: http://reviews.jit.su/
 
 # Next
 - how to put mongodb results into index.html page - done!
-- add some backbone
+- add some backbone - done-ish
+- save a new review to mongodb - done
 - pull in some data from google library api
    Search via isbn: https://www.googleapis.com/books/v1/volumes?q=isbn:0735619670
 - I'm using home grown routing partly as a means to learn but a web framework like express would be better
@@ -48,6 +49,7 @@ https://github.com/nodejitsu/handbook
 - https://github.com/christkv/mongodb-presentation
 - http://www.slideshare.net/ggoodale/getting-started-with-mongodb-and-nodejs
 - http://mongodb.github.com/node-mongodb-native/api-articles/nodekoarticle1.html
+- node modules: http://visionmedia.github.com/masteringnode/book.html
 
 
 # Node
