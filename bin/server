@@ -35,10 +35,12 @@ var reviewsStore = new StorageCrud({databaseName: 'nodejitsudb93315994410',
                                         user: 'nodejitsu',
                                         password: 'a3bf2896d17cbf1cd4068210f8fa9bb8'
                                     } });
+
 var mimeTypes = {
     '.js' : 'text/javascript',
     '.html': 'text/html',
-    '.css' : 'text/css'
+    '.css' : 'text/css',
+    '.png' : 'image/png'
 };
 
 // return http response
@@ -155,7 +157,7 @@ function lookupRoute(req) {
     var url = decodeURI(req.url);
 
 	// treat js, css and images as assets
-	if (url && (url.indexOf('.js') !== -1 || url.indexOf('.css') !== -1)) {
+	if (url && (url.indexOf('.js') !== -1 || url.indexOf('.css') !== -1 || url.indexOf('.png') !== -1)) {
 		url = 'asset';
 	}
 

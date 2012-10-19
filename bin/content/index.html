@@ -39,9 +39,34 @@
   <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 
 
-  <div id="content">
-  </div>
+    <div id="content">
+    </div>
 
+    <div id="sidenav" style="display: block; position: fixed; left: 0px; top: 134px; width: 75px;">
+
+        <img src="/content/img/actions.png" width="57" height="20" border="0" alt="actions">
+
+        <div class="menu-container" style="position: relative; z-index: 800">
+
+            <div class="nav-holder nav-pos-1" data-url="#add" style="left: -100px; ">          
+                <div class="outie-nav-text" style="background:url(/content/img/open-background.png)">add review</div>
+                <div class="nav-icon-holder">
+                    <img src="/content/img/add.png" width="61" height="50" id="TOPIC.50" class="nav-icon nav-icon-off" style="display: inline-block; "> 
+                    <img src="/content/img/add_over.png" width="61" height="50" id="TOPIC.50" class="nav-icon nav-icon-over" style="display: none; "> 
+                    <img src="/content/img/add.png" width="61" height="50" id="TOPIC.50" class="nav-icon nav-icon-on" style="display: none; ">
+                </div>
+            </div>
+
+            <div class="nav-holder nav-pos-2" data-url="#view" style="left: -100px; ">
+                <div class="outie-nav-text" style="background:url(/content/img/open-background.png)">Slideshow</div>
+                <div class="nav-icon-holder">
+                    <img src="/content/img/view.png" width="61" height="50" id="TOPIC.6" class="nav-icon nav-icon-off" style="display: inline-block; "> 
+                    <img src="/content/img/view_over.png" width="61" height="50" id="TOPIC.6" class="nav-icon nav-icon-over" style="display: none; "> 
+                    <img src="/content/img/view.png" width="61" height="50" id="TOPIC.6" class="nav-icon nav-icon-on" style="display: none; ">
+                </div>
+            </div>            
+         </div>
+    </div>
 
 
   <!-- JavaScript at the bottom for fast page loading -->
@@ -57,7 +82,46 @@
   <!-- contains all libraries and code for the  app -->
   <script src="/content/js/all.combined.js"></script>
 
+  <script>
+    (function($){
+    $.fn.sideNavAnimate = function(options) {
 
+        var defaults = {
+            duration: 100,
+            animOffset: -200
+        };
+        var opts = $.extend(defaults, options);
+
+        return this.each(function() {
+            var $this = $(this);
+
+            $this
+                .mouseenter(function(){
+                    $this.find('.nav-icon').hide();
+                    $this.find('.nav-icon-over').show();
+
+                    $this.stop(true).animate({left:0}, opts.duration);
+                })
+                .mouseleave(function(){
+                    $this.animate({left: opts.animOffset}, opts.duration, '', function() {
+                        $this.find('.nav-icon').hide();
+                        $this.find('.nav-icon-off').show();
+                    });
+
+                })
+                .click(function(){
+                    console.log("clicked element, link is", $this.data("url"));
+
+                    document.location.href = $(this).data('url');
+                });
+        });
+    };
+    })(jQuery);  
+
+    $('.nav-holder').sideNavAnimate({duration: 500,
+                                     animOffset: -100});
+
+  </script>
     
 </body>
 </html>

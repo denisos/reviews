@@ -34,6 +34,7 @@ You can see the app deployed on jitsu at: http://reviews.jit.su/
 - save a new review to mongodb - done
 - pull in some data from google library api
    Search via isbn: https://www.googleapis.com/books/v1/volumes?q=isbn:0735619670
+- convert db access to a node module - done   
 - I'm using home grown routing partly as a means to learn but a web framework like express would be better
 - investigate relational support in mongodb e.g. author information to book relationship
 

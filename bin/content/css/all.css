@@ -25,8 +25,69 @@ input, textarea {
 
 #content {
     margin: auto;
-    width: 600px;
+    width: 960px;
 }
+
+
+/* Side navigation */
+.menu-container {
+    position:relative;
+    z-index:800;
+}
+
+.nav-holder {
+    position:absolute;
+    left:-100px;
+    width:265px;
+    height:50px;
+    cursor:pointer;
+}
+
+.outie-nav-text{
+    width:100px;
+    float:left;
+    height:46px;
+    text-align:right;
+    line-height:37px;
+    font-family:ProximaNova-Bold;
+    font-size:11px;
+    text-transform:uppercase;
+    padding-top:3px;
+    background-repeat:no-repeat;
+    cursor:pointer;
+}
+    
+.nav-icon-holder {
+    text-align:right;
+    float:left;
+}
+    
+.nav-icon-off {
+}
+    
+.nav-icon-over {
+}
+    
+.nav-icon-on {
+}
+    
+.nav-icon{
+    display:none;
+}
+    
+.nav-pos-1 {
+    top:-2px;
+}
+.nav-pos-2 {
+    top:36px;
+}
+.nav-pos-3 {
+    top:74px;
+}
+.nav-pos-4 {
+    top:112px;
+}
+
 
 
 /* reviews list page */

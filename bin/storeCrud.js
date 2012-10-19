@@ -1,7 +1,7 @@
 
 /*
  * This module exports a constructor function which provides the means to construct
- *  objects which provide basic crud options (in this case to a mongo db)
+ *  objects which provide basic crud options to a mongo db and its collection
  *
  * The object constructor api provides methods as follows:
  *   list - returns array of all reviews as javascript objects 
@@ -20,11 +20,14 @@
  *
  */
 module.exports = (function() {
+    // private variables
+    var dbConfig,                // local copy of configuration data such as dbname
+        db;                      // stores the db connection
 
     function StorageCrud(options) {
-        this.dbConfig = _isOptionsValid(options); 
+        dbConfig = _isOptionsValid(options); 
 
-        console.log("StorageCrud ctor: ", options, this.dbConfig);
+        console.log("StorageCrud ctor: ", options, dbConfig);
 
         // even if not called with new will create a new object
         if (! (this instanceof StorageCrud)) {
@@ -38,9 +41,9 @@ module.exports = (function() {
         //   to the server if there is a failure
         // http://mongodb.github.com/node-mongodb-native/api-generated/db.html
         //
-        this.db = new mongodb.Db(this.dbConfig.databaseName,
-            new mongodb.Server(this.dbConfig.server, 
-                               this.dbConfig.port, 
+        db = new mongodb.Db(dbConfig.databaseName,
+            new mongodb.Server(dbConfig.server, 
+                               dbConfig.port, 
                                {auto_reconnect: true})
         );
 
@@ -48,7 +51,7 @@ module.exports = (function() {
         // will be available for all subsequent requests
         // expect there's a cleaner way to do this but this is just a POC
         //
-        this.db.open(function (err, db_p) {
+        db.open(function (err, db_p) {
             if (err) { throw err; }
         }); 
 
@@ -100,8 +103,8 @@ module.exports = (function() {
         console.log('seedData');
              
 
-        self.db.authenticate(this.dbConfig.authInfo.user, 
-                             this.dbConfig.authInfo.password, function (err, replies) { 
+        db.authenticate(dbConfig.authInfo.user, 
+                        dbConfig.authInfo.password, function (err, replies) { 
             // You are now connected and authenticated.
 
             console.log('Err after authn is ', err);    
@@ -111,7 +114,7 @@ module.exports = (function() {
             //
             // createCollection creates the collection
             //db.createCollection('bookReviews', function(err, colln) { 
-            self.db.collection(self.dbConfig.collection, function(err, colln) {
+            db.collection(dbConfig.collection, function(err, colln) {
 
                 colln.insert({ 
                     isbn: '9780312536633',
@@ -146,10 +149,10 @@ module.exports = (function() {
         
         console.log('removeData');
 
-        self.db.authenticate(self.dbConfig.authInfo.user, 
-                             self.dbConfig.authInfo.password,  function (err, replies) {   
+        db.authenticate(dbConfig.authInfo.user, 
+                        dbConfig.authInfo.password,  function (err, replies) {   
 
-            self.db.collection(self.dbConfig.collection, function(err, colln) {
+            db.collection(dbConfig.collection, function(err, colln) {
 
                 //  removes all
                 colln.remove({}, {safe:true}, function(err, num) {
@@ -178,14 +181,14 @@ module.exports = (function() {
 
         console.log('home page requested');
 
-        self.db.authenticate(self.dbConfig.authInfo.user, 
-                             self.dbConfig.authInfo.password, function (err, replies) { 
+        db.authenticate(dbConfig.authInfo.user, 
+                        dbConfig.authInfo.password, function (err, replies) { 
             // You are now connected and authenticated.
 
             console.log('Authn status ', err);  
 
             // read book reviews
-            self.db.collection(self.dbConfig.collection, function(err, collection) {
+            db.collection(dbConfig.collection, function(err, collection) {
 
                 // toArray() is a shortcut which will not work for large sets of data
                 //   would have to use stream or pagination or other for larger, real world
@@ -212,13 +215,13 @@ module.exports = (function() {
 
         console.log('addReview');
 
-        self.db.authenticate(self.dbConfig.authInfo.user, 
-                             self.dbConfig.authInfo.password, function (err, replies) {          
+        db.authenticate(dbConfig.authInfo.user, 
+                        dbConfig.authInfo.password, function (err, replies) {          
             // You are now connected and authenticated.
 
             // insert the book review
             // 
-            self.db.collection(self.dbConfig.collection, function(err, colln) {
+            db.collection(dbConfig.collection, function(err, colln) {
                                 
                 colln.insert(docToAdd, function(){});
 
@@ -231,7 +234,7 @@ module.exports = (function() {
     // export the constructor function from this module
     //
     return StorageCrud;
-    
+
 })();    
 
 
