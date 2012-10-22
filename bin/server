@@ -19,11 +19,12 @@
 
 var http = require('http'),
     path = require('path'),
-    fs = require('fs');
-    mongodb = require('mongodb'),
+    fs = require('fs'),
     StorageCrud = require('./storeCrud');
 
-if (!StorageCrud) throw new Error("reviews storage not exist");
+if (!StorageCrud) {
+    throw new Error("ERROR: reviews storage not exist");
+}
 
 // instantiate the storage manager
 //

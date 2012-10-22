@@ -17,8 +17,10 @@
     el: '#content',
 
     events: {
-       'click #save'    : 'handleSaveBookReview',
-       'keypress #title'   : 'handleTitleKeypress'
+       'click #save'            : 'handleSaveBookReview',
+       'click #search'          : 'handleSearchBookReview',
+       'click #manualEntry'     : 'handleManualEntryBookReview',
+       'keypress #title'        : 'handleTitleKeypress'
     },
 
     /*
@@ -29,7 +31,7 @@
     initialize: function () {
         _.bindAll(this, 'render');
 
-        // bind to the book review
+
         //this.model.bind('change', this.render, this);
     },
 
@@ -53,6 +55,34 @@
       
         return this;
     },   
+
+    renderBookSearchSuccess: function(bookCollection, response) {
+        var self = this,
+            data = {};
+        
+        data.books = bookCollection.toJSON();
+
+        _.each(bookCollection.models, function(book) {
+            console.log(book.get("title"));
+        });
+
+        console.log(bookCollection.toJSON());
+
+        dust.render("addreview_searchresults", data, function (err, output) {
+            if (err) { throw err; }
+
+            $('#booksSearchResults', self.$el).html(output).parent().show();
+
+            $('#entryDetails').hide();
+
+        });
+
+    },
+
+    renderBookSearchError: function(bookCollection, response) {
+        console.log("Error occured searching, please retry or enter manual info");
+
+    },    
 
     handleSaveBookReview: function(event) {
         console.log("handleSaveBookReview");
@@ -79,8 +109,31 @@
         );
     },
 
+    /*
+     * when user is entering a book review they can search the bookCollection
+     *  for a match on title
+     *
+     * @param {Object} event
+     */ 
+    handleSearchBookReview: function(event) {
+
+        // set the search term and then fetch the data passing
+        //  success and error callbacks
+        //
+        c.bookCollection.setSearchTerm($('#title').val());
+        c.bookCollection.fetch({success: this.renderBookSearchSuccess,
+                                error: this.renderBookSearchError});
+
+    },
+
     handleTitleKeypress: function(event) {
-        console.log('keypress char: ', String.fromCharCode(event.which));
+//        console.log('keypress char: ', String.fromCharCode(event.which));
+    },
+
+    handleManualEntryBookReview: function(event) {
+        $('#booksSearchResults', this.$el).parent().hide();
+
+        $('#entryDetails', this.$el).show();
     }
 
   },

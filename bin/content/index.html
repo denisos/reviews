@@ -82,42 +82,8 @@
   <!-- contains all libraries and code for the  app -->
   <script src="/content/js/all.combined.js"></script>
 
+
   <script>
-    (function($){
-    $.fn.sideNavAnimate = function(options) {
-
-        var defaults = {
-            duration: 100,
-            animOffset: -200
-        };
-        var opts = $.extend(defaults, options);
-
-        return this.each(function() {
-            var $this = $(this);
-
-            $this
-                .mouseenter(function(){
-                    $this.find('.nav-icon').hide();
-                    $this.find('.nav-icon-over').show();
-
-                    $this.stop(true).animate({left:0}, opts.duration);
-                })
-                .mouseleave(function(){
-                    $this.animate({left: opts.animOffset}, opts.duration, '', function() {
-                        $this.find('.nav-icon').hide();
-                        $this.find('.nav-icon-off').show();
-                    });
-
-                })
-                .click(function(){
-                    console.log("clicked element, link is", $this.data("url"));
-
-                    document.location.href = $(this).data('url');
-                });
-        });
-    };
-    })(jQuery);  
-
     $('.nav-holder').sideNavAnimate({duration: 500,
                                      animOffset: -100});
 

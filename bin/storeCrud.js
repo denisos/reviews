@@ -19,6 +19,8 @@
  *    reviewsStore.seed(successCallback, errorCallback);
  *
  */
+var mongodb = require('mongodb');
+
 module.exports = (function() {
     // private variables
     var dbConfig,                // local copy of configuration data such as dbname
@@ -27,7 +29,7 @@ module.exports = (function() {
     function StorageCrud(options) {
         dbConfig = _isOptionsValid(options); 
 
-        console.log("StorageCrud ctor: ", options, dbConfig);
+        //console.log("StorageCrud ctor: ", options, dbConfig);
 
         // even if not called with new will create a new object
         if (! (this instanceof StorageCrud)) {
@@ -42,9 +44,9 @@ module.exports = (function() {
         // http://mongodb.github.com/node-mongodb-native/api-generated/db.html
         //
         db = new mongodb.Db(dbConfig.databaseName,
-            new mongodb.Server(dbConfig.server, 
-                               dbConfig.port, 
-                               {auto_reconnect: true})
+                    new mongodb.Server(dbConfig.server, 
+                                       dbConfig.port, 
+                                       {auto_reconnect: true})
         );
 
         // open the db connection at start, 
@@ -54,8 +56,6 @@ module.exports = (function() {
         db.open(function (err, db_p) {
             if (err) { throw err; }
         }); 
-
-        console.log("StorageCrud ctor finished ok");
 
     }
 

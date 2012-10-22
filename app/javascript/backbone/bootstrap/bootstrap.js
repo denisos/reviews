@@ -9,6 +9,9 @@
     // 
     reviews.routers.appRouter = new reviews.routers.AppRouter();
 
+    // instantiate book collection too
+    reviews.collections.bookCollection = new reviews.collections.BookCollection();
+
     // Start Backbone Routing
     // ----------------------
     Backbone.history.start();

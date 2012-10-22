@@ -114,8 +114,8 @@ form    {
     background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);
     margin:auto;
     position:relative;
-    width:550px;
-    height:350px;
+    width:600px;
+    min-height:400px;
 //    font-family: Tahoma, Geneva, sans-serif;
     font-size: 14px;
 //    font-style: italic;
@@ -135,11 +135,19 @@ form    {
 }
 
 form input    {
-    display:block;
     border: 1px solid #999;
     -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+}
+
+.newline {
+    display: block;
+    padding: 5px ;
+}
+
+label span {
+    padding-right: 10px;
 }
 
 #isbn {
@@ -154,5 +162,22 @@ textarea#review {
     width:375px;
     height:150px;
     display: block;
+}
+
+/* search results */
+#booksSearchResultsContainer {
+    display: none;
+    padding: 10px;
+}
+
+.searchResultsContainer {
+    min-height: 115px;
+    min-width: 92px;
+    float: left;
+}
+
+.searchBookThumbImg {
+    height: 110px;
+    width: 75px;
 }
 

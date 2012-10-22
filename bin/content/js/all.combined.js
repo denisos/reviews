@@ -3080,6 +3080,45 @@ var helpers = {
 dust.helpers = helpers;
 
 })(typeof exports !== 'undefined' ? exports : getGlobal());
+
+/* a jquery plugin to animate in and out the side navigation */ 
+(function($){
+    // namespace the $
+    $.fn.sideNavAnimate = function(options) {
+
+        // merge options passed with defaults
+        var opts = $.extend({
+            duration: 100,
+            animOffset: -200
+        }, options || {});
+
+        // return the wrapped set to allow chaining
+        return this.each(function() {
+            var $this = $(this);       // the current element
+
+            $this
+                // animate out by set to 0 and show hover icon
+                .mouseenter(function(){
+                        $this.find('.nav-icon').hide();
+                        $this.find('.nav-icon-over').show();
+
+                        $this.stop(true).animate({left:0}, opts.duration);
+                })
+                // animate back in by animOffset show off icon
+                .mouseleave(function(){
+                    $this.animate({left: opts.animOffset}, opts.duration, '', function() {
+                        $this.find('.nav-icon').hide();
+                        $this.find('.nav-icon-off').show();
+                    });
+                })
+                // for click get value in data-url and jump to it
+                .click(function(){
+                    console.log("clicked element, link is", $this.data("url"));
+                    document.location.href = $(this).data('url');
+                });
+        });
+    };
+})(jQuery);  
 /* =========================================================================
    Libraries
    ====================================================================== */
@@ -3087,8 +3126,9 @@ dust.helpers = helpers;
 //= require underscore
 //= require backbone
 //= require dust-core-0.4.0
+//= require jquery.sideNavAnimate-1.0.js
 
-(function(){dust.register("addreview_addreview",body_0);function body_0(chk,ctx){return chk.write("<form id=\"addReviewForm\" method=\"/reviews\" action=\"post\"><div><h2>Enter a book review here:</h2><label><span>title</span><input id=\"title\" type=\"text\" name=\"title\" autofocus/><input type=\"button\" id=\"search\" value=\"search\" /></label><label><span>isbn</span><input id=\"isbn\" type=\"text\" name=\"isbn\" placeholder=\"10 or 13 ok\" /></label><label><span>review</span><textarea id=\"review\" name=\"review\"></textarea><input type=\"submit\" id=\"save\" value=\"save\" /></label></div></form>");}return body_0;})();(function(){dust.register("home_index",body_0);function body_0(chk,ctx){return chk.write("<h2>The following are book reviews for books I've read recently</h2>").section(ctx.get("reviews"),ctx,{"else":body_1,"block":body_2},null).write("<a class=\"addReview clear\" href=\"#add\">Add new Review</a>");}function body_1(chk,ctx){return chk.write("<h1>Sorry, no reviews to be found!</h1>");}function body_2(chk,ctx){return chk.write("<div class=\"reviewContainer\"><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\"><img src=").reference(ctx.get("thumbImg"),ctx,"h").write(" class=\"bookThumbImg\"></a><div><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\">").reference(ctx.get("title"),ctx,"h").write("</a></div></div>");}return body_0;})();
+(function(){dust.register("addreview_addreview",body_0);function body_0(chk,ctx){return chk.write("<form id=\"addReviewForm\" method=\"/reviews\" action=\"post\"><div><h2>Enter a book review here:</h2><label class=\"newline\"><span class=\"prompt\">title</span><input id=\"title\" type=\"text\" name=\"title\" autofocus/><input type=\"button\" id=\"search\" value=\"Search Googles Library\" /><input type=\"button\" id=\"manualEntry\" value=\"I'll Enter Myself\" /></label><div style=\"display:none;\"><h3>Click the book if you see it below. Otherwise please refine and retry the search</h3><div id=\"booksSearchResults\"></div></div><div id=\"entryDetails\" style=\"display: none;\"><label class=\"newline\"><span class=\"prompt\">isbn</span><input id=\"isbn\" type=\"text\" name=\"isbn\" placeholder=\"10 or 13 ok\" /></label><label class=\"newline\"><span class=\"prompt\">review</span><textarea id=\"review\" name=\"review\"></textarea><input type=\"submit\" id=\"save\" value=\"Save this Review\" /></label></div></div></form>");}return body_0;})();(function(){dust.register("addreview_searchresults",body_0);function body_0(chk,ctx){return chk.section(ctx.get("books"),ctx,{"else":body_1,"block":body_2},null);}function body_1(chk,ctx){return chk.write("<h1>Sorry, no books found from Google for that title!</h1>");}function body_2(chk,ctx){return chk.write("<div class=\"searchResultsContainer\"><a class=\"book\" href=\"#books/").reference(ctx.get("isbn"),ctx,"h").write("\" id=").reference(ctx.get("isbn"),ctx,"h").write("><img src=").reference(ctx.get("thumbImg"),ctx,"h").write(" class=\"searchBookThumbImg\"></a><!-- <span style=\"display: block\">").reference(ctx.get("title"),ctx,"h").write(" ").section(ctx.get("subtitle"),ctx,{"block":body_3},null).write("</span> --></div>");}function body_3(chk,ctx){return chk.reference(ctx.get("subtitle"),ctx,"h");}return body_0;})();(function(){dust.register("home_index",body_0);function body_0(chk,ctx){return chk.write("<h2>The following are book reviews for books I've read recently</h2>").section(ctx.get("reviews"),ctx,{"else":body_1,"block":body_2},null).write("<a class=\"addReview clear\" href=\"#add\">Add new Review</a>");}function body_1(chk,ctx){return chk.write("<h1>Sorry, no reviews to be found!</h1>");}function body_2(chk,ctx){return chk.write("<div class=\"reviewContainer\"><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\"><img src=").reference(ctx.get("thumbImg"),ctx,"h").write(" class=\"bookThumbImg\"></a><div><a class=\"\" href=\"#reviews/").reference(ctx.get("isbn"),ctx,"h").write("\">").reference(ctx.get("title"),ctx,"h").write("</a></div></div>");}return body_0;})();
 // Setting up default namespaces if they do not exist
 // --------------------
 // Adding console.log utilities if missing 
@@ -3123,8 +3163,20 @@ if (window.reviews === undefined) {
     // BookModel represents a book
     //
     reviews.models.BookModel = Backbone.Model.extend({
+
+        // extract just the book fields we're interested in by overriding
+        //  parse and returning a map of fields which backbone will set
+        //  into each model
+        //
         parse: function(response) {
-            console.log(response);
+            var vol = response.volumeInfo;
+
+            // to-do: make more robust
+            return {title: vol.title, 
+                    subtitle: vol.subtitle || null,
+                    authors: vol.authors[0],
+                    thumbImg: vol.imageLinks.smallThumbnail || null,
+                    isbn: vol.industryIdentifiers.length > 1 ? vol.industryIdentifiers[0].identifier : null};
         }
     });
 
@@ -3152,11 +3204,28 @@ if (window.reviews === undefined) {
         m = reviews.models;
 
     c.BookCollection = Backbone.Collection.extend({
+		model: m.BookModel,
+
         url: function() {
             return 'https://www.googleapis.com/books/v1/volumes?q=' + this.searchTerm;
         },
 
-		model: m.BookModel
+        setSearchTerm: function(term) {
+            this.searchTerm = term;
+        },
+
+        parse: function(response) {
+            return response.items;
+        },
+
+        /* 
+         * override backbone sync to use jsonp
+         *
+         */
+        sync: function (method, model, options) {  
+            options.dataType = "jsonp";  
+            return Backbone.sync(method, model, options);  
+        }
 
 
     });
@@ -3263,8 +3332,10 @@ if (window.reviews === undefined) {
     el: '#content',
 
     events: {
-       'click #save'    : 'handleSaveBookReview',
-       'keypress #title'   : 'handleTitleKeypress'
+       'click #save'            : 'handleSaveBookReview',
+       'click #search'          : 'handleSearchBookReview',
+       'click #manualEntry'     : 'handleManualEntryBookReview',
+       'keypress #title'        : 'handleTitleKeypress'
     },
 
     /*
@@ -3275,7 +3346,7 @@ if (window.reviews === undefined) {
     initialize: function () {
         _.bindAll(this, 'render');
 
-        // bind to the book review
+
         //this.model.bind('change', this.render, this);
     },
 
@@ -3299,6 +3370,34 @@ if (window.reviews === undefined) {
       
         return this;
     },   
+
+    renderBookSearchSuccess: function(bookCollection, response) {
+        var self = this,
+            data = {};
+        
+        data.books = bookCollection.toJSON();
+
+        _.each(bookCollection.models, function(book) {
+            console.log(book.get("title"));
+        });
+
+        console.log(bookCollection.toJSON());
+
+        dust.render("addreview_searchresults", data, function (err, output) {
+            if (err) { throw err; }
+
+            $('#booksSearchResults', self.$el).html(output).parent().show();
+
+            $('#entryDetails').hide();
+
+        });
+
+    },
+
+    renderBookSearchError: function(bookCollection, response) {
+        console.log("Error occured searching, please retry or enter manual info");
+
+    },    
 
     handleSaveBookReview: function(event) {
         console.log("handleSaveBookReview");
@@ -3325,8 +3424,31 @@ if (window.reviews === undefined) {
         );
     },
 
+    /*
+     * when user is entering a book review they can search the bookCollection
+     *  for a match on title
+     *
+     * @param {Object} event
+     */ 
+    handleSearchBookReview: function(event) {
+
+        // set the search term and then fetch the data passing
+        //  success and error callbacks
+        //
+        c.bookCollection.setSearchTerm($('#title').val());
+        c.bookCollection.fetch({success: this.renderBookSearchSuccess,
+                                error: this.renderBookSearchError});
+
+    },
+
     handleTitleKeypress: function(event) {
-        console.log('keypress char: ', String.fromCharCode(event.which));
+//        console.log('keypress char: ', String.fromCharCode(event.which));
+    },
+
+    handleManualEntryBookReview: function(event) {
+        $('#booksSearchResults', this.$el).parent().hide();
+
+        $('#entryDetails', this.$el).show();
     }
 
   },
@@ -3420,6 +3542,9 @@ if (window.reviews === undefined) {
     // Instantiating the main application router
     // 
     reviews.routers.appRouter = new reviews.routers.AppRouter();
+
+    // instantiate book collection too
+    reviews.collections.bookCollection = new reviews.collections.BookCollection();
 
     // Start Backbone Routing
     // ----------------------
